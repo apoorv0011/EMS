@@ -30,28 +30,25 @@ BEGIN
   INSERT INTO public.profiles (id, full_name, email, phone, role)
   VALUES (
     NEW.id,
-    -- Fallback for full_name to prevent any errors if it's empty or null.
-    COALESCE(
-      NULLIF(TRIM(NEW.raw_user_meta_data-&gt;&gt;'full_name'), ''),
-      SPLIT_PART(NEW.email, '@', 1)
-    ),
+    -- Always provide a fallback for full_name (email prefix if missing/empty)
+    COALESCE(NULLIF(TRIM(NEW.raw_user_meta_data->>'full_name'), ''), SPLIT_PART(NEW.email, '@', 1)),
     NEW.email,
-    NEW.raw_user_meta_data-&gt;&gt;'phone',
-    -- Fallback for role, defaulting to 'user'.
-    COALESCE(NEW.raw_user_meta_data-&gt;&gt;'role', 'user')::user_role
+    -- Fallback for phone: empty string if missing
+    COALESCE(NULLIF(TRIM(NEW.raw_user_meta_data->>'phone'), ''), ''),
+    -- Fallback for role: 'user' if missing or empty
+    COALESCE(NULLIF(TRIM(NEW.raw_user_meta_data->>'role'), ''), 'user')::user_role
   );
 
   -- If the user signed up as a vendor, create a corresponding (unapproved) vendor entry.
-  IF COALESCE(NEW.raw_user_meta_data-&gt;&gt;'role', 'user') = 'vendor' THEN
+  IF COALESCE(NULLIF(TRIM(NEW.raw_user_meta_data->>'role'), ''), 'user') = 'vendor' THEN
     INSERT INTO public.vendors (user_id, business_name, is_approved)
     VALUES (
       NEW.id,
-      -- Create a robust default business name from the user's full name, or fall back to their email.
-      COALESCE(
-        NULLIF(TRIM(NEW.raw_user_meta_data-&gt;&gt;'full_name'), ''),
-        SPLIT_PART(NEW.email, '@', 1)
-      ) || '''s Business',
-      false -- Vendors must be approved by an admin.
+      -- Default business name: use full_name or email prefix
+      COALESCE(NULLIF(TRIM(NEW.raw_user_meta_data->>'business_name'), ''),
+               NULLIF(TRIM(NEW.raw_user_meta_data->>'full_name'), ''),
+               SPLIT_PART(NEW.email, '@', 1) || '''s Business'),
+      false
     );
   END IF;
 
