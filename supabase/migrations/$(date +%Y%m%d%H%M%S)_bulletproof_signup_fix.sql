@@ -30,13 +30,14 @@ BEGIN
   INSERT INTO public.profiles (id, full_name, email, phone, role)
   VALUES (
     NEW.id,
-    -- Always provide a fallback for full_name (email prefix if missing/empty)
     COALESCE(NULLIF(TRIM(NEW.raw_user_meta_data->>'full_name'), ''), SPLIT_PART(NEW.email, '@', 1)),
     NEW.email,
-    -- Fallback for phone: empty string if missing
     COALESCE(NULLIF(TRIM(NEW.raw_user_meta_data->>'phone'), ''), ''),
-    -- Fallback for role: 'user' if missing or empty
-    COALESCE(NULLIF(TRIM(NEW.raw_user_meta_data->>'role'), ''), 'user')::user_role
+    -- If the user is a vendor, force role to 'vendor', else fallback to 'user'
+    CASE
+      WHEN COALESCE(NULLIF(TRIM(NEW.raw_user_meta_data->>'role'), ''), 'user') = 'vendor' THEN 'vendor'
+      ELSE 'user'
+    END::user_role
   );
 
   -- If the user signed up as a vendor, create a corresponding (unapproved) vendor entry.
