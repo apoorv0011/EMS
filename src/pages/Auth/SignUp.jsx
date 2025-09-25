@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { motion } from 'framer-motion'
-import { Eye, EyeOff, Mail, Lock, User, Phone } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, Store } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
 const SignUp = () => {
@@ -19,6 +19,7 @@ const SignUp = () => {
   } = useForm()
 
   const password = watch('password')
+  const role = watch('role')
 
   if (user) {
     return <Navigate to="/" replace />
@@ -27,11 +28,16 @@ const SignUp = () => {
   const onSubmit = async (data) => {
     setLoading(true)
     try {
-      await signUp(data.email, data.password, {
+      const userData = {
         full_name: data.fullName,
-        phone: data.phone,
-        role: data.role
-      })
+        role: data.role,
+      };
+
+      if (data.role === 'vendor') {
+        userData.business_name = data.businessName;
+      }
+
+      await signUp(data.email, data.password, userData)
     } catch (error) {
       console.error('Sign up error:', error)
     } finally {
@@ -111,32 +117,6 @@ const SignUp = () => {
             </div>
 
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                Phone Number
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Phone className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  {...register('phone', {
-                    required: 'Phone number is required',
-                    pattern: {
-                      value: /^[+]?[(]?[\d\s\-()]{10,}$/,
-                      message: 'Invalid phone number'
-                    }
-                  })}
-                  type="tel"
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter your phone number"
-                />
-              </div>
-              {errors.phone && (
-                <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
-              )}
-            </div>
-
-            <div>
               <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
                 Account Type
               </label>
@@ -152,6 +132,34 @@ const SignUp = () => {
                 <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
               )}
             </div>
+
+            {role === 'vendor' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 mb-2">
+                  Business Name
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Store className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    {...register('businessName', {
+                      required: 'Business name is required for vendors'
+                    })}
+                    type="text"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter your business name"
+                  />
+                </div>
+                {errors.businessName && (
+                  <p className="mt-1 text-sm text-red-600">{errors.businessName.message}</p>
+                )}
+              </motion.div>
+            )}
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
