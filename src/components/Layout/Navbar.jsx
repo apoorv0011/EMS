@@ -22,9 +22,11 @@ const Navbar = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
 
   const handleSignOut = async () => {
-    await signOut()
-    navigate('/')
-    setIsProfileOpen(false)
+  console.log('Sign out button clicked');
+  await signOut();
+  console.log('Sign out completed, navigating home');
+  navigate('/');
+  setIsProfileOpen(false);
   }
 
   const navigationLinks = [

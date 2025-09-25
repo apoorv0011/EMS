@@ -25,7 +25,11 @@ const SignIn = () => {
   const onSubmit = async (data) => {
     setLoading(true)
     try {
-      await signIn(data.email, data.password)
+      const result = await signIn(data.email, data.password)
+      if (!result.error) {
+        // Force reload to ensure Navbar and UI update with latest profile/role
+        window.location.reload()
+      }
     } catch (error) {
       console.error('Sign in error:', error)
     } finally {
