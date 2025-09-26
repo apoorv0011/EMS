@@ -16,6 +16,8 @@ import { motion } from 'framer-motion'
 
 const Navbar = () => {
   const { user, profile, signOut, isAdmin, isVendor } = useAuth()
+  // Debug: log the profile and role every render
+  console.log('Navbar profile:', profile)
   const { getTotalItems } = useCart()
   const navigate = useNavigate()
   const [isMenuOpen, setIsMenuOpen] = useState(false)

@@ -46,9 +46,10 @@ export const auth = {
 export const db = {
   // Profiles
   getProfile: async (userId) => {
+    // Add a random param to bypass any cache
     const { data, error } = await supabase
       .from('profiles')
-      .select('*')
+      .select('*', { head: false })
       .eq('id', userId)
       .single()
     return { data, error }

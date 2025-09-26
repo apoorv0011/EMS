@@ -48,13 +48,19 @@ export const AuthProvider = ({ children }) => {
 
   const fetchProfile = async (userId) => {
     try {
+      console.log('Fetching profile for userId:', userId)
       const { data, error } = await db.getProfile(userId)
-      console.log('Fetched profile from DB:', data);
-      if (error) throw error
+      if (error) {
+        console.error('Error fetching profile:', error)
+        setProfile(null)
+        return
+      }
       setProfile(data)
-      console.log('Set profile in context:', data);
+      // Debug: log the role every time profile is set
+      console.log('Profile set in context:', data)
     } catch (error) {
-      console.error('Error fetching profile:', error)
+      console.error('Exception in fetchProfile:', error)
+      setProfile(null)
     }
   }
 
@@ -87,6 +93,8 @@ export const AuthProvider = ({ children }) => {
         await fetchProfile(currentUser.id)
       }
       toast.success('Welcome back!')
+      // Force a hard reload to clear all caches and ensure the latest profile is fetched
+      window.location.reload(true)
       return { data, error: null }
     } catch (error) {
       toast.error(error.message)
