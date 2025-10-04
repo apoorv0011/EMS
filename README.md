@@ -1,4 +1,4 @@
-# 🎉 EventMS – Event Management System
+# 🎉 EventHub – Event Management System
 
 A simplified, multi-role Event Management System built with **React** and **Supabase**, enabling users to browse and purchase events, vendors to create and manage them, and admins to oversee the entire platform.
 
